@@ -1,0 +1,167 @@
+﻿<Window x:Class="RealDebrid.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RealDebrid"
+        mc:Ignorable="d"
+        ResizeMode="CanMinimize"
+        Title="Real Debrid" Height="450" Width="900">
+
+    <Window.Resources>
+        <Style TargetType="TabItem">
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="70"/>
+        </Style>
+
+        <Style TargetType="Button">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Margin" Value="5,5"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="120"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Background" Value="#5C6BC0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                CornerRadius="10" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="FontStretch" Value="Condensed"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        
+        <Style TargetType="TextBox" x:Key="PlaceholderTextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Background" Value="#2E2E3E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#5C6BC0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Grid>
+                            <TextBox x:Name="textBox" Background="Transparent" BorderThickness="0" Padding="10" Text="{TemplateBinding Text}" Foreground="White"/>
+                            <TextBlock x:Name="Placeholder" Text="{TemplateBinding Tag}" Margin="10,0" VerticalAlignment="Center" Foreground="#888888"
+                                       IsHitTestVisible="False" Visibility="Collapsed"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger SourceName="textBox" Property="Text" Value="">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger SourceName="textBox" Property="Text" Value="{x:Null}">
+                                <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+    
+    
+    <TabControl>
+        <TabItem Header="Login" Name="Login">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Height="40" Width="650" Name="token" Margin="10,10"/>
+                    <Button Height="40" Width="100" Click="salvaToken">Salva Token</Button>
+                </StackPanel>
+                <TextBlock>Per recuperare il token bisogna accedere al sito https://real-debrid.com/apitoken e copiare il token</TextBlock>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Torrent" Name="Torrent">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Height="40" Width="650" Name="magnet" Margin="10,10"/>
+                    <Button Height="40" Width="100" Click="aggiungiMagnet">Salva Magnet</Button>
+                </StackPanel>
+                <ListView ItemsSource="{Binding torrentList}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Height="80" Width="850" Orientation="Horizontal">
+                                <TextBlock VerticalAlignment="Center" Height="40" Width="400" Text="{Binding filename}" Margin="10,10"/>
+                                <TextBlock VerticalAlignment="Center" Height="40" Width="70" Text="{Binding status}" Margin="10,10"/>
+                                <TextBlock VerticalAlignment="Center" Height="40" Width="70" Text="{Binding progress}" Margin="10,10">%</TextBlock>
+                                <Button Tag="{Binding}" Click="deleteTorrent" Height="40" Width="100"  Margin="10,10">
+                                    Cancella
+                                </Button>
+                                <Button Tag="{Binding}" Click="downloadTorrent" Height="40" Width="100"  Margin="10,10">
+                                    Salva
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding progress}" Value="100">
+                                                    <Setter Property="Margin" Value="5"/>
+                                                    <Setter Property="Height" Value="40"/>
+                                                    <Setter Property="Width" Value="120"/>
+                                                    <Setter Property="FontSize" Value="14"/>
+                                                    <Setter Property="Background" Value="#5C6BC0"/>
+                                                    <Setter Property="Foreground" Value="White"/>
+                                                    <Setter Property="BorderThickness" Value="0"/>
+                                                    <Setter Property="Padding" Value="8,4"/>
+                                                    <Setter Property="Cursor" Value="Hand"/>
+                                                    <Setter Property="Visibility" Value="Visible" />
+                                                    <Setter Property="Template">
+                                                        <Setter.Value>
+                                                            <ControlTemplate TargetType="Button">
+                                                                <Border Background="{TemplateBinding Background}" 
+                                                                     CornerRadius="10" 
+                                                                     BorderBrush="{TemplateBinding BorderBrush}" 
+                                                                     BorderThickness="{TemplateBinding BorderThickness}">
+                                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                                </Border>
+                                                            </ControlTemplate>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Download" Name="Download">
+            <StackPanel Orientation="Vertical">
+                <StackPanel Orientation="Horizontal">
+                    <TextBox Height="40" Width="650" Name="link" Margin="10,10"/>
+                    <Button Height="40" Width="100" Click="controllaLink">Controlla Link</Button>
+                </StackPanel>
+                <ListView ItemsSource="{Binding downloadList}">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Height="80" Width="800" Orientation="Horizontal">
+                                <TextBlock Height="40" Width="200" Text="{Binding filename}"/>
+                                <Button Click="downloadLink" Tag="{Binding}" Height="40" Width="100"  Margin="10,10">
+                                    Scarica
+                                </Button>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+        </TabItem>
+
+    </TabControl>
+</Window>
