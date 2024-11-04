@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 using System.IO;
-
+using System.Net.Http;
 using System.Windows;
 
 namespace RealDebrid.service
@@ -8,7 +8,7 @@ namespace RealDebrid.service
     public class SaveService
     {
 
-        public static async void saveFile(Task<Stream> content, String filename)
+        public static async void saveFile(Task<HttpContent> contentTask, String filename)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
@@ -23,16 +23,38 @@ namespace RealDebrid.service
                     {
                         try
                         {
-                            using (Stream responseStream = await content)
+                            using HttpContent content = await contentTask;
+                            long totalBytes = content.Headers.ContentLength.Value;
+
+                            using Stream responseStream = await content.ReadAsStreamAsync();
+                            byte[] buffer = new byte[2048];
+                            int bytesRead;
+                            long totalBytesRead = 0;
+
+                            ProgressWindow progressWindow = null;
+
+                            Application.Current.Dispatcher.Invoke(() =>
                             {
-                                // Leggi dallo stream sorgente e scrivi nel file di destinazione in blocchi
-                                byte[] buffer = new byte[2048];
-                                int bytesRead;
-                                while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
-                                {
-                                    writer.Write(buffer, 0, bytesRead);
-                                }
+                                progressWindow = new ProgressWindow();
+                                progressWindow.Owner = Application.Current.MainWindow;
+                                progressWindow.Show();
+                            });
+
+                            while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
+                            {
+                                writer.Write(buffer, 0, bytesRead);
+
+                                totalBytesRead += bytesRead;
+
+                                // Calcola la percentuale di avanzamento
+                                int progressPercentage = (int)((double)totalBytesRead / totalBytes * 100);
+                                Application.Current.Dispatcher.Invoke(() =>
+
+                                    progressWindow.UpdateProgress(progressPercentage)
+                                );
                             }
+
+                            Application.Current.Dispatcher.Invoke(() => progressWindow.Close());
                         }
                         catch (EndOfStreamException)
                         {

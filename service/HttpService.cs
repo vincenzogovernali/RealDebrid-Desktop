@@ -54,6 +54,18 @@ namespace RealDebrid.service
         }
 
 
+        public async Task<HttpContent> httpContentAsync()
+        {
+            Console.WriteLine("INFO => URL: {} HEADERS : {}", client.BaseAddress, client.DefaultRequestHeaders.ToString());
+            var task = await getCall();
+            if (task.IsSuccessStatusCode)
+            {
+                return task.Content;
+            }
+            return default;
+        }
+
+
         private Task<HttpResponseMessage> getCall()
         {
             if (method == HttpMethod.Get)

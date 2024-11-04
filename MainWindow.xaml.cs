@@ -3,7 +3,6 @@ using RealDebrid.model;
 using RealDebrid.service;
 using RealDebrid.util;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
@@ -79,7 +78,6 @@ namespace RealDebrid
         private void controllaLink(object sender, RoutedEventArgs e)
         {
             String finalLink = link.Text;
-            downloadList.Clear();
             new Thread(() =>
             {
                 Task<CheckUrlResponse> checkUrlResponse = new HttpService<CheckUrlResponse>(Constant.CHECK_DOWNLOAD_URL, HttpMethod.Post, HttpUtil.generateDefaultHeader(finalToken), HttpUtil.generateBody(Constant.LINK, finalLink)).jsonResponseAsync();
@@ -140,8 +138,8 @@ namespace RealDebrid
                         if (taskDownloadResponse != null)
                         {
                             DownloadResponse downloadResponse = taskDownloadResponse.Result;
-                            Task<Stream> content = new HttpService<Stream>(downloadResponse.getDownload(), HttpMethod.Get, HttpUtil.generateDefaultHeader(finalToken), default).bodyResponseAsync();
-                            SaveService.saveFile(content, downloadResponse.getFilename());
+                            Task<HttpContent> contentTask = new HttpService<HttpContent>(downloadResponse.getDownload(), HttpMethod.Get, HttpUtil.generateDefaultHeader(finalToken), default).httpContentAsync();
+                            SaveService.saveFile(contentTask, downloadResponse.getFilename());
                         }
                     }
                 }).Start();
@@ -169,12 +167,20 @@ namespace RealDebrid
             {
                 new Thread(() =>
                 {
-                    Task<Stream> taskContent = new HttpService<Stream>(item.download, HttpMethod.Get, HttpUtil.generateDefaultHeader(finalToken), default).bodyResponseAsync();
+                    Task<HttpContent> taskContent = new HttpService<HttpContent>(item.download, HttpMethod.Get, HttpUtil.generateDefaultHeader(finalToken), default).httpContentAsync();
                     SaveService.saveFile(taskContent, item.filename);
 
                 }).Start();
             }
         }
+
+
+        private void pulisci(object sender, RoutedEventArgs e)
+        {
+            downloadList.Clear();
+        }
+
+
 
         protected override void OnClosed(EventArgs e)
         {
